@@ -1,0 +1,116 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+// Clase Base (Abstracción y Encapsulamiento)
+abstract class Habitacion {
+    private int numero;
+    private double precioBase;
+    private boolean ocuapda;
+
+    public Habitacion(int numero, double precioBase) {
+        this.numero = numero;
+        this.precioBase = precioBase;
+        this.ocuapda = false;
+    }
+
+    public int getNumero() { return numero; }
+    public boolean isOcupada() { return ocuapda; }
+    public void setOcupada(boolean ocuapda) { this.ocuapda = ocuapda; }
+    
+    // Método abstracto: cada tipo de habitación calculará su precio de forma diferente (Polimorfismo)
+    public abstract double calcularPrecioFinal();
+
+    @Override
+    public String toString() {
+        return "Habitación #" + numero + " [" + (ocuapda ? "OCUPADA" : "DISPONIBLE") + "]";
+    }
+}
+
+// Clase Hija 1: Habitación Estándar (Herencia)
+class HabitacionEstandar extends Habitacion {
+    public HabitacionEstandar(int numero, double precioBase) {
+        super(numero, precioBase);
+    }
+
+    @Override
+    public double calcularPrecioFinal() {
+        return 50.0; // Precio fijo económico
+    }
+}
+
+// Clase Hija 2: Habitación Suite VIP
+class HabitacionSuite extends Habitacion {
+    private boolean incluyeJacuzzi;
+
+    public HabitacionSuite(int numero, double precioBase, boolean incluyeJacuzzi) {
+        super(numero, precioBase);
+        this.incluyeJacuzzi = incluyeJacuzzi;
+    }
+
+    @Override
+    public double calcularPrecioFinal() {
+        // Si tiene Jacuzzi, se le suma un extra al precio base
+        return 120.0 + (incluyeJacuzzi ? 40.0 : 0.0);
+    }
+}
+
+// Clase Principal que gestiona la lógica
+public class SistemaReservas {
+    private List<Habitacion> inventario = new ArrayList<>();
+
+    public void inicializarHotel() {
+        inventario.add(new HabitacionEstandar(101, 50));
+        inventario.add(new HabitacionEstandar(102, 50));
+        inventario.add(new HabitacionSuite(201, 120, true));
+        inventario.add(new HabitacionSuite(202, 120, false));
+    }
+
+    public void mostrarHabitaciones() {
+        System.out.println("\n--- ESTADO DEL HOTEL ---");
+        for (Habitacion h : inventario) {
+            System.out.println(h + " - Precio por noche: $" + h.calcularPrecioFinal());
+        }
+    }
+
+    public void reservar(int numero) {
+        for (Habitacion h : inventario) {
+            if (h.getNumero() == numero) {
+                if (!h.isOcupada()) {
+                    h.setOcupada(true);
+                    System.out.println("✅ ¡Reservada con éxito! Disfrute su estancia.");
+                } else {
+                    System.out.println("❌ Lo sentimos, esa habitación ya está ocupada.");
+                }
+                return;
+            }
+        }
+        System.out.println("❌ No se encontró ninguna habitación con ese número.");
+    }
+
+    public static void main(String[] args) {
+        SistemaReservas hotel = new SistemaReservas();
+        hotel.inicializarHotel();
+        Scanner scanner = new Scanner(System.in);
+        
+        while (true) {
+            System.out.println("\n1. Ver Habitaciones\n2. Reservar Habitación\n3. Salir");
+            System.out.print("Seleccione una opción: ");
+            int opcion = scanner.nextInt();
+
+            if (opcion == 1) {
+                hotel.mostrarHabitaciones();
+            } else if (opcion == 2) {
+                System.out.print("Ingrese el número de habitación: ");
+                int num = scanner.nextInt();
+                hotel.reservar(num);
+            } else if (opcion == 3) {
+                System.out.println("Saliendo del sistema de reservas...");
+                break;
+            } else {
+                System.out.println("Opción inválida.");
+            }
+        }
+        scanner.close();
+    }
+}
